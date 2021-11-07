@@ -1,11 +1,15 @@
 package minimockbob
 
 import (
+	"errors"
 	"strings"
 	"unicode"
 )
 
-func Gen(input string) string {
+func Gen(input string) (string, error) {
+	if len(input) < 2 {
+		return "", errors.New("input is too short to process")
+	}
 	var b strings.Builder
 	b.Grow(len(input))
 	upper := true
@@ -21,5 +25,5 @@ func Gen(input string) string {
 			b.WriteRune(c)
 		}
 	}
-	return b.String()
+	return b.String(), nil
 }

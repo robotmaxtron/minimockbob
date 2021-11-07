@@ -6,28 +6,35 @@ import (
 
 func TestNoCaps(t *testing.T) {
 	want := "fOoBaR"
-	if got := Gen("foobar"); got != want {
-		t.Errorf("Hello() = %q, want %q", got, want)
+	if got, err := Gen("foobar"); got != want && err != nil {
+		t.Errorf("Gen() = %q, want %q", got, want)
 	}
 }
 
 func TestCaps(t *testing.T) {
 	want := "fOoBaR"
-	if got := Gen("Foobar"); got != want {
-		t.Errorf("Hello() = %q, want %q", got, want)
+	if got, err := Gen("Foobar"); got != want && err != nil {
+		t.Errorf("Gen() = %q, want %q", got, want)
 	}
 }
 
 func TestMultipleWords(t *testing.T) {
 	want := "fOo BaR"
-	if got := Gen("foo bar"); got != want {
+	if got, err := Gen("foo bar"); got != want && err != nil {
 		t.Errorf("Hello() = %q, want %q", got, want)
 	}
 }
 
 func TestPunctuation(t *testing.T) {
 	want := "fOo, BaR?"
-	if got := Gen("foo, bar?"); got != want {
-		t.Errorf("Hello() = %q, want %q", got, want)
+	if got, err := Gen("foo, bar?"); got != want && err != nil {
+		t.Errorf("Gen() = %q, want %q", got, want)
+	}
+}
+
+func TestTooShort(t *testing.T) {
+	want := ""
+	if got, _ := Gen("f"); got != want {
+		t.Errorf("Gen() = %q, want %q", got, want)
 	}
 }
