@@ -6,28 +6,28 @@ import (
 
 func TestNoCaps(t *testing.T) {
 	want := "fOoBaR"
-	if got := sarcasmGen("foobar"); got != want {
+	if got := Gen("foobar"); got != want {
 		t.Errorf("Hello() = %q, want %q", got, want)
 	}
 }
 
 func TestCaps(t *testing.T) {
 	want := "fOoBaR"
-	if got := sarcasmGen("Foobar"); got != want {
+	if got := Gen("Foobar"); got != want {
 		t.Errorf("Hello() = %q, want %q", got, want)
 	}
 }
 
 func TestMultipleWords(t *testing.T) {
 	want := "fOo BaR"
-	if got := sarcasmGen("foo bar"); got != want {
+	if got := Gen("foo bar"); got != want {
 		t.Errorf("Hello() = %q, want %q", got, want)
 	}
 }
 
 func TestPunctuation(t *testing.T) {
 	want := "fOo, BaR?"
-	if got := sarcasmGen("foo, bar?"); got != want {
+	if got := Gen("foo, bar?"); got != want {
 		t.Errorf("Hello() = %q, want %q", got, want)
 	}
 }

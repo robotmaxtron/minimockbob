@@ -5,7 +5,7 @@ import (
 	"unicode"
 )
 
-func sarcasmGen(input string) string {
+func Gen(input string) string {
 	var b strings.Builder
 	b.Grow(len(input))
 	upper := true
