@@ -5,7 +5,7 @@ import (
 	"unicode"
 )
 
-func minimockbob(input string) string {
+func sarcasmGen(input string) string {
 	var b strings.Builder
 	b.Grow(len(input))
 	upper := true
