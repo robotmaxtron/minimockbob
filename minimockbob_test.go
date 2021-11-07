@@ -34,7 +34,8 @@ func TestPunctuation(t *testing.T) {
 
 func TestTooShort(t *testing.T) {
 	want := ""
-	if got, _ := Gen("f"); got != want {
+	if got, err := Gen("f"); got != want {
 		t.Errorf("Gen() = %q, want %q", got, want)
+		t.Errorf("Error: %v", err)
 	}
 }

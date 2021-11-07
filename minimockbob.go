@@ -1,3 +1,4 @@
+// Package minimockbob transforms a string into one with alternating capitalization.
 package minimockbob
 
 import (
@@ -6,6 +7,9 @@ import (
 	"unicode"
 )
 
+// Gen transforms a string into one with alternating capitalization.
+// If the string length is less than 2, an empty string and an error are returned.
+// result will always begin with a lowercase letter.
 func Gen(input string) (string, error) {
 	if len(input) < 2 {
 		return "", errors.New("input is too short to process")

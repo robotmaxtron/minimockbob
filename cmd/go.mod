@@ -1,4 +1,4 @@
-module github.com/robotmaxtron/minimockbob/cmd/mockbob
+module github.com/robotmaxtron/minimockbob/cmd/minimockbob
 
 go 1.17
 
