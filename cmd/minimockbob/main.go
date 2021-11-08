@@ -1,4 +1,4 @@
-/* commandline binary
+/*commandline binary
 
 Usage:
 	./minimockbob <user input>

@@ -1,4 +1,4 @@
-// package minimockbob transforms a string of length of at least 2 letters into a new one with alternating capitalization.
+//Package minimockbob transforms a string of length of at least 2 letters into a new one with alternating capitalization.
 package minimockbob
 
 import (
