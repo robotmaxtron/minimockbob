@@ -4,4 +4,4 @@
 
 `minimockbob` transforms a string into one with alternating capitalzation, it can be imported into your own package or compiled to a binary.
 
-![Binary example](../minimockbob/cmd/demo-tape/demo.gif)
+![compiled](https://raw.githubusercontent.com/robotmaxtron/minimockbob/main/cmd/demo-tape/demo.gif)
