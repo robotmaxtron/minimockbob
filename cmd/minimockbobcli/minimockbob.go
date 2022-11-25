@@ -1,8 +1,9 @@
-/*command line binary
+/*
+command line binary
 
 Usage:
-	./minimockbob <user input>
 
+	./minimockbob <user input>
 */
 package main
 
