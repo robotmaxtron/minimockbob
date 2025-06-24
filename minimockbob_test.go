@@ -13,21 +13,21 @@ func TestNoCaps(t *testing.T) {
 
 func TestCaps(t *testing.T) {
 	want := "fOoBaR"
-	if got, err := Gen("Foobar"); got != want && err != nil {
+	if got, err := Gen("Foobar"); got != want || err != nil {
 		t.Errorf("Gen() = %q, want %q", got, want)
 	}
 }
 
 func TestMultipleWords(t *testing.T) {
 	want := "fOo BaR"
-	if got, err := Gen("foo bar"); got != want && err != nil {
+	if got, err := Gen("foo bar"); got != want || err != nil {
 		t.Errorf("Hello() = %q, want %q", got, want)
 	}
 }
 
 func TestPunctuation(t *testing.T) {
 	want := "fOo, BaR?"
-	if got, err := Gen("foo, bar?"); got != want && err != nil {
+	if got, err := Gen("foo, bar?"); got != want || err != nil {
 		t.Errorf("Gen() = %q, want %q", got, want)
 	}
 }

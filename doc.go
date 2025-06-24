@@ -22,7 +22,7 @@ The package can be used in two ways:
 
 
 
-	2. Running the package as a command line utility. To build the binary, run `go build` in the cmd/minimockbob subdirectory.
+	2. Running the package as a command line utility. To build the binary, run `go build` in the cmd/minimockbobcli subdirectory.
 
 		Usage: ./minimockbob Hello, World!
 
