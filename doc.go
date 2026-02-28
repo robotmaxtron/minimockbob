@@ -23,10 +23,11 @@ The package can be used in two ways:
 
 
 	2. Running the package as a command line utility. To build the binary, run `go build` in the cmd/minimockbob
-subdirectory. It can also be installed directly with Go
-`go install github.com/robotmaxtron/minimockbob/cmd/minimockbob@latest`
+subdirectory.
 
-		Usage: ./minimockbob Hello, World!
+		Usage: ./minimockbob "Hello, World!"
+		Or:    ./minimockbob Hello World
+		Or:    echo "Hello, World!" | minimockbob
 
 		Will print: hElLo, WoRlD!
 */

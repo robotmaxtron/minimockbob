@@ -9,6 +9,7 @@ func TestGen(t *testing.T) {
 		input string
 		want  string
 	}{
+		{"Hello, World!", "hElLo, WoRlD!"},
 		{"foobar", "fOoBaR"},
 		{"Foobar", "fOoBaR"},
 		{"foo bar", "fOo BaR"},
