@@ -4,38 +4,25 @@ import (
 	"testing"
 )
 
-func TestNoCaps(t *testing.T) {
-	want := "fOoBaR"
-	if got, err := Gen("foobar"); got != want && err != nil {
-		t.Errorf("Gen() = %q, want %q", got, want)
+func TestGen(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"foobar", "fOoBaR"},
+		{"Foobar", "fOoBaR"},
+		{"foo bar", "fOo BaR"},
+		{"foo, bar?", "fOo, BaR?"},
+		{"f", "f"},
+		{"", ""},
+		{"AB", "aB"},
+		{"123", "123"},
 	}
-}
-
-func TestCaps(t *testing.T) {
-	want := "fOoBaR"
-	if got, err := Gen("Foobar"); got != want || err != nil {
-		t.Errorf("Gen() = %q, want %q", got, want)
-	}
-}
-
-func TestMultipleWords(t *testing.T) {
-	want := "fOo BaR"
-	if got, err := Gen("foo bar"); got != want || err != nil {
-		t.Errorf("Hello() = %q, want %q", got, want)
-	}
-}
-
-func TestPunctuation(t *testing.T) {
-	want := "fOo, BaR?"
-	if got, err := Gen("foo, bar?"); got != want || err != nil {
-		t.Errorf("Gen() = %q, want %q", got, want)
-	}
-}
-
-func TestTooShort(t *testing.T) {
-	want := ""
-	if got, err := Gen("f"); got != want {
-		t.Errorf("Gen() = %q, want %q", got, want)
-		t.Errorf("Error: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			if got := Gen(tt.input); got != tt.want {
+				t.Errorf("Gen(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
 	}
 }

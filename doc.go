@@ -18,7 +18,7 @@ The package can be used in two ways:
 			fmt.Println(minimockbob.Gen("Hello, World!"))
 		}
 
-		Will print: hElLo, WoRlD!
+		Will print: hElLo, wOrLd!
 
 
 
