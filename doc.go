@@ -3,7 +3,7 @@ package minimockbob
 /*
 Package minimockbob is a sarcastic text generator, transforming a string into one with alternating capitalization.
 
-The package is primarily intended for use in testing, and likely should not ever be used in production.
+The package is primarily intended for use in testing and likely should not ever be used in production.
 
 The package can be used in two ways:
 
@@ -18,11 +18,13 @@ The package can be used in two ways:
 			fmt.Println(minimockbob.Gen("Hello, World!"))
 		}
 
-		Will print: hElLo, wOrLd!
+		Will print: hElLo, WoRlD!
 
 
 
-	2. Running the package as a command line utility. To build the binary, run `go build` in the cmd/minimockbobcli subdirectory.
+	2. Running the package as a command line utility. To build the binary, run `go build` in the cmd/minimockbob
+subdirectory. It can also be installed directly with Go
+`go install github.com/robotmaxtron/minimockbob/cmd/minimockbob@latest`
 
 		Usage: ./minimockbob Hello, World!
 
