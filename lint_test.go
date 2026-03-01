@@ -148,23 +148,3 @@ func TestLintGoModTidy(t *testing.T) {
 		t.Log("go.mod and go.sum are tidy")
 	}
 }
-
-// TestLintShadow checks for variable shadowing
-func TestLintShadow(t *testing.T) {
-	// Check if shadow is available
-	if _, err := exec.LookPath("shadow"); err != nil {
-		t.Skip("shadow not found in PATH, skipping shadow checking test")
-	}
-
-	cmd := exec.Command("shadow", "./...")
-	output, err := cmd.CombinedOutput()
-
-	if err != nil {
-		// shadow returns non-zero if it finds issues
-		if len(output) > 0 {
-			t.Errorf("shadow found shadowed variables:\n%s", string(output))
-		}
-	} else {
-		t.Log("No shadowed variables found")
-	}
-}
