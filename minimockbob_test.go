@@ -1,6 +1,7 @@
 package minimockbob
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -145,4 +146,77 @@ func TestGenStartsWithLower(t *testing.T) {
 			}
 		})
 	}
+}
+
+// BenchmarkGenShort benchmarks Gen with short strings
+func BenchmarkGenShort(b *testing.B) {
+	input := "Hello, World!"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Gen(input)
+	}
+}
+
+// BenchmarkGenMedium benchmarks Gen with medium-length strings
+func BenchmarkGenMedium(b *testing.B) {
+	input := "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs!"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Gen(input)
+	}
+}
+
+// BenchmarkGenLong benchmarks Gen with long strings
+func BenchmarkGenLong(b *testing.B) {
+	input := strings.Repeat("abcdefghijklmnopqrstuvwxyz ", 100)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Gen(input)
+	}
+}
+
+// BenchmarkGenUnicode benchmarks Gen with unicode strings
+func BenchmarkGenUnicode(b *testing.B) {
+	input := "café naïve Ñoño résumé"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Gen(input)
+	}
+}
+
+// BenchmarkGenAllCaps benchmarks Gen with all uppercase input
+func BenchmarkGenAllCaps(b *testing.B) {
+	input := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Gen(input)
+	}
+}
+
+// BenchmarkGenAllLower benchmarks Gen with all lowercase input
+func BenchmarkGenAllLower(b *testing.B) {
+	input := "abcdefghijklmnopqrstuvwxyz"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Gen(input)
+	}
+}
+
+// BenchmarkGenMixedContent benchmarks Gen with mixed letters, numbers, and symbols
+func BenchmarkGenMixedContent(b *testing.B) {
+	input := "abc123def456ghi!@#$%^&*()xyz"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Gen(input)
+	}
+}
+
+// BenchmarkGenParallel benchmarks Gen with parallel execution
+func BenchmarkGenParallel(b *testing.B) {
+	input := "Hello, World!"
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Gen(input)
+		}
+	})
 }

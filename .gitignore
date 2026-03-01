@@ -1,0 +1,13 @@
+# Test coverage files
+coverage.out
+coverage.html
+
+# Binaries
+cmd/minimockbob/minimockbob
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store

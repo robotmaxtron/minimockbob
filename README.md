@@ -53,6 +53,28 @@ cd cmd/minimockbob
 go test -v
 ```
 
+Run tests with coverage:
+```bash
+go test -cover ./...
+```
+
+Generate detailed coverage report:
+```bash
+go test -coverprofile=coverage.out -covermode=atomic ./...
+go tool cover -func=coverage.out
+```
+
+Generate HTML coverage report:
+```bash
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out -o coverage.html
+```
+
+Run performance benchmarks:
+```bash
+go test -bench=. -benchmem
+```
+
 ### Dedication
 For my friend, James.
 
