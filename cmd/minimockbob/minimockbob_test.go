@@ -72,7 +72,13 @@ func TestCLIPipeInputVariations(t *testing.T) {
 		{"with numbers", "abc123def", "aBc123DeF"},
 		{"empty line handling", "line1\nline2", "lInE1\nlInE2"},
 		{"multiple spaces", "a  b  c", "a  B  c"},
-		{"special chars", "test!?@#$%", "tEsT!?@#$%"},
+		{"special chars basic", "test!@#$%", "tEsT!@#$%"},
+		{"special chars extended", "test!@#$%^&*()", "tEsT!@#$%^&*()"},
+		{"question and exclamation", "hello?world!", "hElLo?WoRlD!"},
+		{"hyphens and underscores", "a-b_c=d+e", "a-B_c=D+e"},
+		{"brackets and braces", "test[abc]def", "tEsT[aBc]DeF"},
+		{"colon and semicolon", "a:b;c", "a:B;c"},
+		{"tilde", "a~b", "a~B"},
 	}
 
 	for _, tt := range tests {
@@ -154,7 +160,7 @@ func TestCLIEmptyString(t *testing.T) {
 	}
 }
 
-// TestCLISpecialCharacters tests the CLI with special characters
+// TestCLISpecialCharacters tests the CLI with special characters via arguments
 func TestCLISpecialCharacters(t *testing.T) {
 	tests := []struct {
 		input string
@@ -167,6 +173,14 @@ func TestCLISpecialCharacters(t *testing.T) {
 		{"hello?", "hElLo?"},
 		{"world!", "wOrLd!"},
 		{"hello? world!", "hElLo? WoRlD!"},
+		{"test@#$%", "tEsT@#$%"},
+		{"a+b=c", "a+B=c"},
+		{"x[y]z", "x[Y]z"},
+		{"m&n*o", "m&N*o"},
+		{"a:b;c", "a:B;c"},
+		{"p-q_r", "p-Q_r"},
+		{"s/t\\u", "s/T\\u"},
+		{"v<w>x", "v<W>x"},
 	}
 
 	for _, tt := range tests {
