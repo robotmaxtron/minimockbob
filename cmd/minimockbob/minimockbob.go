@@ -1,10 +1,16 @@
 /*
-command line binary
+Command line binary for minimockbob - a sarcastic text generator.
 
 Usage:
 
-	./minimockbob "<user input>"
-	Or pipe text to it: echo \"<text>\" | minimockbob
+	./minimockbob "Hello, World!"     # Quoted argument
+	./minimockbob Hello World         # Multiple unquoted arguments
+	echo "Hello, World!" | minimockbob  # Pipe input
+
+All three methods will output: hElLo, WoRlD!
+
+The binary transforms input text into alternating capitalization,
+starting with lowercase for the first letter.
 */
 package main
 
