@@ -52,3 +52,6 @@ Run CLI functional tests:
 cd cmd/minimockbob
 go test -v
 ```
+
+### Dedication
+For my friend, James.
