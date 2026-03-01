@@ -2,12 +2,13 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/robotmaxtron/minimockbob.svg)](https://pkg.go.dev/github.com/robotmaxtron/minimockbob) [![Go Report Card](https://goreportcard.com/badge/github.com/robotmaxtron/minimockbob)](https://goreportcard.com/report/github.com/robotmaxtron/minimockbob)
 
-`minimockbob` transforms a string into one with alternating capitalization, it can be imported into your own package or 
-compiled to a binary.
+`minimockbob` transforms a string into one with alternating capitalization. It can be imported as a Go package, compiled to a binary, or run as a container.
 
 ## Installation
 
-Install the binary with Go:
+### Install as a binary
+
+Install with Go:
 ```bash
 go install github.com/robotmaxtron/minimockbob/cmd/minimockbob@latest
 ```
@@ -18,9 +19,27 @@ cd cmd/minimockbob
 go build
 ```
 
+### Build as a container
+
+Build with [ko](https://ko.build):
+```bash
+# Set the target repository (use ko.local for local builds)
+KO_DOCKER_REPO=ko.local ko build ./cmd/minimockbob
+
+# Or push to a remote registry
+KO_DOCKER_REPO=docker.io/yourusername ko build ./cmd/minimockbob
+```
+
+Or build with Docker:
+```bash
+docker build -t minimockbob .
+```
+
 ## Usage
 
-The command line utility supports three usage modes:
+### Command Line
+
+The binary supports three usage modes:
 
 1. **Quoted argument:**
    ```bash
@@ -39,6 +58,34 @@ The command line utility supports three usage modes:
    echo "Hello, World!" | minimockbob
    # Output: hElLo, WoRlD!
    ```
+
+### Container Usage
+
+Run with Docker:
+```bash
+# With arguments
+docker run --rm ko.local/minimockbob:latest "Hello Container"
+
+# With piped input
+echo "Hello Container" | docker run --rm -i ko.local/minimockbob:latest
+```
+
+### As a Go Package
+
+Import and use in your code:
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/robotmaxtron/minimockbob"
+)
+
+func main() {
+    result := minimockbob.Gen("Hello, World!")
+    fmt.Println(result)  // Output: hElLo, WoRlD!
+}
+```
 
 ## Testing
 
@@ -74,6 +121,34 @@ Run performance benchmarks:
 ```bash
 go test -bench=. -benchmem
 ```
+
+## Documentation
+
+View the full package documentation:
+```bash
+# View package documentation locally
+go doc -all github.com/robotmaxtron/minimockbob
+
+# Or use godoc to start a local documentation server
+godoc -http=:6060
+# Then visit http://localhost:6060/pkg/github.com/robotmaxtron/minimockbob/
+```
+
+Online documentation is available at [pkg.go.dev](https://pkg.go.dev/github.com/robotmaxtron/minimockbob).
+
+## Container Configuration
+
+The project includes configuration for building optimized container images:
+
+- **`.ko.yaml`**: Configuration for [ko](https://ko.build) builds
+  - Uses distroless base image for minimal attack surface
+  - CGO disabled for static binary
+  - Trimpath for reproducible builds
+
+- **`Dockerfile`**: Multi-stage Docker build
+  - Alpine-based build stage
+  - Distroless runtime for security
+  - Results in ~9MB container image
 
 ### Dedication
 For my friend, James.

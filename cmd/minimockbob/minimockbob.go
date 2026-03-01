@@ -27,6 +27,15 @@ func main() {
 	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 }
 
+// run is the main logic of the CLI, separated for testability.
+// It accepts command-line arguments and I/O streams as parameters.
+//
+// The function supports three input modes:
+//  1. Command-line arguments: args are joined with spaces
+//  2. Piped input: reads from stdin when no args provided and stdin is a pipe
+//  3. Empty input: shows usage information
+//
+// Returns exit code: 0 for success, 1 for error or usage display
 func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	var userInput string
 	if len(args) > 0 {

@@ -1,0 +1,18 @@
+# ko build configuration for minimockbob
+# https://ko.build/configuration/
+
+# Base image to use for the container
+# Using distroless for minimal attack surface and small image size
+defaultBaseImage: gcr.io/distroless/static:nonroot
+
+# Build settings
+builds:
+  - id: minimockbob
+    main: ./cmd/minimockbob
+    # Go build flags
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w

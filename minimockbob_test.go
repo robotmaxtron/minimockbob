@@ -220,3 +220,133 @@ func BenchmarkGenParallel(b *testing.B) {
 		}
 	})
 }
+
+// TestGenEdgeCasesExtended tests additional edge cases
+func TestGenEdgeCasesExtended(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		// Emoji and special unicode
+		{"emoji", "hello 👋 world", "hElLo 👋 WoRlD"},
+		{"mixed emoji", "test🔥code", "tEsT🔥cOdE"},
+
+		// Various whitespace
+		{"tab separated", "a\tb\tc", "a\tB\tc"},
+		{"carriage return", "a\rb\rc", "a\rB\rc"},
+		{"form feed", "a\fb\fc", "a\fB\fc"},
+		{"vertical tab", "a\vb\vc", "a\vB\vc"},
+
+		// Repeated punctuation
+		{"multiple exclamation", "wow!!!", "wOw!!!"},
+		{"multiple question", "what???", "wHaT???"},
+		{"ellipsis", "wait...", "wAiT..."},
+
+		// Quotes and brackets
+		{"single quotes", "'hello'", "'hElLo'"},
+		{"double quotes", "\"hello\"", "\"hElLo\""},
+		{"backticks", "`code`", "`cOdE`"},
+		{"curly braces", "{hello}", "{hElLo}"},
+		{"angle brackets", "<hello>", "<hElLo>"},
+		{"parentheses", "(hello)", "(hElLo)"},
+
+		// Currency and symbols
+		{"dollar sign", "$100", "$100"},
+		{"euro sign", "€50", "€50"},
+		{"pound sign", "£30", "£30"},
+		{"percent", "50%", "50%"},
+		{"at symbol", "@user", "@uSeR"},
+		{"hash tag", "#tag", "#tAg"},
+		{"ampersand", "A&B", "a&B"},
+		{"asterisk", "a*b*c", "a*B*c"},
+
+		// Math symbols
+		{"plus minus", "a+b-c", "a+B-c"},
+		{"multiply divide", "a*b/c", "a*B/c"},
+		{"equals", "a=b", "a=B"},
+		{"less greater", "a<b>c", "a<B>c"},
+
+		// Only non-letters
+		{"only numbers", "123456", "123456"},
+		{"only punctuation", "!@#$%^", "!@#$%^"},
+		{"only spaces", "    ", "    "},
+		{"mixed non-letters", "123 !@# 456", "123 !@# 456"},
+
+		// Alternating patterns
+		{"single letter words", "I am a go dev", "i Am A gO dEv"},
+		{"all single chars", "a b c d e f", "a B c D e F"},
+
+		// Very long consecutive letters
+		{"long word", "antidisestablishmentarianism", "aNtIdIsEsTaBlIsHmEnTaRiAnIsM"},
+
+		// Mixed scripts (if supported)
+		{"cyrillic", "Привет", "пРиВеТ"},
+		{"greek", "Γειά", "γΕιΆ"},
+
+		// Leading/trailing special chars
+		{"leading special", "!!!hello", "!!!hElLo"},
+		{"trailing special", "hello!!!", "hElLo!!!"},
+		{"surrounded", "***test***", "***tEsT***"},
+
+		// URL-like strings
+		{"url pattern", "https://example.com", "hTtPs://ExAmPlE.cOm"},
+		{"email pattern", "test@example.com", "tEsT@eXaMpLe.CoM"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Gen(tt.input)
+			if got != tt.want {
+				t.Errorf("Gen(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestGenNonASCII tests behavior with various non-ASCII characters
+func TestGenNonASCII(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"accented chars", "crème brûlée", "cRèMe BrÛlÉe"},
+		{"german umlaut", "Über Größe", "üBeR gRöße"}, // Note: ß lowercase is ß, not ẞ
+		{"scandinavian", "Åse Ørsted", "åSe ØrStEd"},
+		{"turkish", "İstanbul", "iStAnBuL"}, // Note: İ (capital dotted I) lowercases to i
+		{"polish", "Łódź", "łÓdŹ"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Gen(tt.input)
+			if got != tt.want {
+				t.Errorf("Gen(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestGenRobustness tests robustness with unusual inputs
+func TestGenRobustness(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{"very long string", strings.Repeat("abcdefghijklmnopqrstuvwxyz", 1000)},
+		{"many spaces", strings.Repeat(" ", 1000)},
+		{"many newlines", strings.Repeat("\n", 100)},
+		{"alternating space letter", strings.Repeat("a ", 500)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Just ensure it doesn't panic or hang
+			result := Gen(tt.input)
+			if len(result) != len(tt.input) {
+				t.Errorf("Gen() changed input length: got %d, want %d", len(result), len(tt.input))
+			}
+		})
+	}
+}
