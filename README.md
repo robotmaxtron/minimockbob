@@ -55,3 +55,6 @@ go test -v
 
 ### Dedication
 For my friend, James.
+
+### Inspiration
+Shoutout to [mockbob](https://github.com/tlkamp/mockbob)
