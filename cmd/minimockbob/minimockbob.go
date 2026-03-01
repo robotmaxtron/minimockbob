@@ -24,27 +24,43 @@ import (
 )
 
 func main() {
+	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
+}
+
+func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	var userInput string
-	if len(os.Args) > 1 {
-		userInput = strings.Join(os.Args[1:], " ")
+	if len(args) > 0 {
+		userInput = strings.Join(args, " ")
 	} else {
-		stat, _ := os.Stdin.Stat()
-		if (stat.Mode() & os.ModeCharDevice) == 0 {
-			// Read from pipe
-			b, err := io.ReadAll(os.Stdin)
+		// Check if we're reading from a pipe
+		if f, ok := stdin.(*os.File); ok {
+			stat, _ := f.Stat()
+			if (stat.Mode() & os.ModeCharDevice) == 0 {
+				// Read from pipe
+				b, err := io.ReadAll(stdin)
+				if err != nil {
+					_, _ = fmt.Fprintf(stderr, "Error reading from STDIN: %v\n", err)
+					return 1
+				}
+				userInput = strings.TrimSuffix(string(b), "\n")
+			}
+		} else {
+			// For testing with non-file readers
+			b, err := io.ReadAll(stdin)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error reading from STDIN: %v\n", err)
-				os.Exit(1)
+				_, _ = fmt.Fprintf(stderr, "Error reading from STDIN: %v\n", err)
+				return 1
 			}
 			userInput = strings.TrimSuffix(string(b), "\n")
 		}
 	}
 
 	if userInput == "" {
-		fmt.Println("Usage: minimockbob \"<text>\"")
-		fmt.Println("Or pipe text to it: echo \"<text>\" | minimockbob")
-		os.Exit(1)
+		_, _ = fmt.Fprintln(stdout, "Usage: minimockbob \"<text>\"")
+		_, _ = fmt.Fprintln(stdout, "Or pipe text to it: echo \"<text>\" | minimockbob")
+		return 1
 	}
 	output := minimockbob.Gen(userInput)
-	fmt.Println(output)
+	_, _ = fmt.Fprintln(stdout, output)
+	return 0
 }

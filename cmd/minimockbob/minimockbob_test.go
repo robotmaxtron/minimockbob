@@ -1,11 +1,134 @@
 package main
 
 import (
+	"bytes"
+	"errors"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
 )
+
+// errorReader always returns an error on Read
+type errorReader struct{}
+
+func (e errorReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("simulated read error")
+}
+
+// TestRunWithArgs tests the run function with command-line arguments
+func TestRunWithArgs(t *testing.T) {
+	tests := []struct {
+		name       string
+		args       []string
+		wantOutput string
+		wantCode   int
+	}{
+		{"single arg", []string{"Hello"}, "hElLo\n", 0},
+		{"multiple args", []string{"Hello", "World"}, "hElLo WoRlD\n", 0},
+		{"with punctuation", []string{"Hello,", "World!"}, "hElLo, WoRlD!\n", 0},
+		{"empty args", []string{}, "Usage: minimockbob \"<text>\"\nOr pipe text to it: echo \"<text>\" | minimockbob\n", 1},
+		{"empty string arg", []string{""}, "Usage: minimockbob \"<text>\"\nOr pipe text to it: echo \"<text>\" | minimockbob\n", 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			stdin := strings.NewReader("")
+			code := run(tt.args, stdin, &stdout, &stderr)
+			if code != tt.wantCode {
+				t.Errorf("run() = %d, want %d", code, tt.wantCode)
+			}
+			if got := stdout.String(); got != tt.wantOutput {
+				t.Errorf("run() output = %q, want %q", got, tt.wantOutput)
+			}
+		})
+	}
+}
+
+// TestRunWithStdin tests the run function reading from stdin
+func TestRunWithStdin(t *testing.T) {
+	tests := []struct {
+		name       string
+		stdin      string
+		wantOutput string
+		wantCode   int
+	}{
+		{"simple input", "Hello World", "hElLo WoRlD\n", 0},
+		{"with newline", "Hello World\n", "hElLo WoRlD\n", 0},
+		{"multiline", "Hello\nWorld", "hElLo\nWoRlD\n", 0},
+		{"empty input", "", "Usage: minimockbob \"<text>\"\nOr pipe text to it: echo \"<text>\" | minimockbob\n", 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			stdin := strings.NewReader(tt.stdin)
+			code := run([]string{}, stdin, &stdout, &stderr)
+			if code != tt.wantCode {
+				t.Errorf("run() = %d, want %d", code, tt.wantCode)
+			}
+			if got := stdout.String(); got != tt.wantOutput {
+				t.Errorf("run() output = %q, want %q", got, tt.wantOutput)
+			}
+		})
+	}
+}
+
+// TestRunStdinReadError tests error handling when reading from stdin fails
+func TestRunStdinReadError(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	stdin := errorReader{}
+	code := run([]string{}, stdin, &stdout, &stderr)
+	if code != 1 {
+		t.Errorf("run() with read error = %d, want 1", code)
+	}
+	if !strings.Contains(stderr.String(), "Error reading from STDIN") {
+		t.Errorf("run() stderr = %q, want error message", stderr.String())
+	}
+}
+
+// TestRunWithPipe tests the run function with actual pipe input (os.File)
+func TestRunWithPipe(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"simple pipe", "Hello Pipe", "hElLo PiPe\n"},
+		{"empty pipe", "", "Usage: minimockbob \"<text>\"\nOr pipe text to it: echo \"<text>\" | minimockbob\n"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w, err := os.Pipe()
+			if err != nil {
+				t.Fatalf("Failed to create pipe: %v", err)
+			}
+
+			// Write test data to pipe in a goroutine
+			go func() {
+				if tt.input != "" {
+					_, _ = w.Write([]byte(tt.input))
+				}
+				_ = w.Close()
+			}()
+
+			var stdout, stderr bytes.Buffer
+			code := run([]string{}, r, &stdout, &stderr)
+			_ = r.Close()
+
+			if tt.input == "" && code != 1 {
+				t.Errorf("run() with empty pipe = %d, want 1", code)
+			} else if tt.input != "" && code != 0 {
+				t.Errorf("run() with pipe = %d, want 0", code)
+			}
+			if got := stdout.String(); got != tt.want {
+				t.Errorf("run() output = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
 
 // TestCLI tests the CLI functionality binary before running any tests
 func TestCLI(t *testing.T) {

@@ -123,7 +123,7 @@ func TestGenAlternation(t *testing.T) {
 	}
 }
 
-// TestGenStartsWithLower ensures first letter is always lowercase
+// TestGenStartsWithLower ensures the first letter is always lowercase
 func TestGenStartsWithLower(t *testing.T) {
 	tests := []string{
 		"Hello",
