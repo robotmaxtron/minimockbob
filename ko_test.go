@@ -91,6 +91,9 @@ func TestKoConfigValid(t *testing.T) {
 }
 
 // buildKoImage is a helper function to build a ko image
+// Returns the full image reference with hash-based name, e.g.:
+// ko.local/minimockbob-8954540d57b52cc7913d1bf8fd346995:f491aaefe3ba5cfce00027e319ee1968d734a446b92345351abca33707545ff4
+// ko also adds a 'latest' tag to the same image
 func buildKoImage(t *testing.T) string {
 	t.Helper()
 
@@ -140,6 +143,7 @@ func buildKoImage(t *testing.T) string {
 	}
 
 	// Parse the output to get the image reference (last line)
+	// This will be the full hash-based image name that ko creates
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 	imageRef := lines[len(lines)-1]
 	t.Logf("Built image: %s", imageRef)
@@ -293,6 +297,9 @@ func TestKoImageExecution(t *testing.T) {
 // This test verifies that ko can build images with custom tags and that
 // the tags are correctly applied to the built images.
 //
+// Note: ko always creates images with hash-based names (e.g., ko.local/minimockbob-<hash>)
+// and then adds the specified tags (e.g., :latest, :v0.0.1) to that same image.
+//
 // Platform handling: The test explicitly sets GOOS=linux and determines
 // the correct GOARCH based on the native architecture. This is necessary
 // because ko builds container images which must run on Linux, and the
@@ -362,15 +369,16 @@ func TestKoBuildWithTags(t *testing.T) {
 	}
 
 	// Parse the output to get the image reference (last line)
+	// This will be the full hash-based image name that ko creates
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 	imageRef := lines[len(lines)-1]
 	t.Logf("Built image: %s", imageRef)
 
-	// Extract the base image name from the ref (format: ko.local:hash)
-	// Tags are added separately by ko
+	// Extract the base image name from the ref (format: ko.local/minimockbob-<hash>:digest)
+	// ko creates a hash-based repository name and then adds the specified tags to it
 	baseImage := strings.Split(imageRef, ":")[0]
 
-	// Verify both tags exist
+	// Verify both tags exist on the hash-based image name
 	for _, tag := range []string{tag1, tag2} {
 		taggedImage := fmt.Sprintf("%s:%s", baseImage, tag)
 		inspectCmd := exec.Command("docker", "inspect", taggedImage)

@@ -12,7 +12,7 @@ import (
 const (
 	packageName    = "minimockbob"
 	packageVersion = "0.0.1"
-	melangeYAML    = "melange.yaml"
+	melangeYAML    = ".melange.yaml"
 )
 
 // getNativeArch returns the native architecture for melange builds
@@ -62,7 +62,7 @@ func TestMelangePrerequisites(t *testing.T) {
 	})
 }
 
-// TestMelangeYAMLValid validates that melange.yaml can be parsed
+// TestMelangeYAMLValid validates that .melange.yaml can be parsed
 func TestMelangeYAMLValid(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping melange YAML validation test in short mode")
@@ -130,7 +130,7 @@ func getDockerSocket(t *testing.T) string {
 	return ""
 }
 
-// TestMelangeBuild builds the APK package
+// TestMelangeBuild builds the APK package for both architectures
 func TestMelangeBuild(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping melange build test in short mode")
@@ -146,9 +146,9 @@ func TestMelangeBuild(t *testing.T) {
 		t.Skip("Docker is not running")
 	}
 
-	// Get native architecture for the build
-	arch := getNativeArch()
-	t.Logf("Building for native architecture: %s", arch)
+	// Build for both architectures
+	architectures := []string{"x86_64", "aarch64"}
+	t.Logf("Building for architectures: %v", architectures)
 
 	// Get Docker socket path
 	dockerHost := getDockerSocket(t)
@@ -262,89 +262,102 @@ subpackages:
 	}(workspaceDir)
 	t.Logf("Using workspace directory: %s", workspaceDir)
 
-	// Build the package
-	t.Log("Building APK package...")
-	cmd = exec.Command("melange", "build", testMelangeYAML,
-		"--signing-key", "melange.rsa",
-		"--runner", "docker",
-		"--arch", arch,
-		"--workspace-dir", workspaceDir,
-		"--source-dir", cwd,
-		"--log-level", "info")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// Build the package for each architecture
+	for _, arch := range architectures {
+		t.Run(arch, func(t *testing.T) {
+			t.Logf("Building APK package for %s...", arch)
+			cmd = exec.Command("melange", "build", testMelangeYAML,
+				"--signing-key", "melange.rsa",
+				"--runner", "docker",
+				"--arch", arch,
+				"--workspace-dir", workspaceDir,
+				"--source-dir", cwd,
+				"--log-level", "info")
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
 
-	// Set DOCKER_HOST environment variable if we found a socket
-	if dockerHost != "" {
-		cmd.Env = append(os.Environ(), "DOCKER_HOST="+dockerHost)
-	}
-
-	if err := cmd.Run(); err != nil {
-		t.Logf("melange build failed: %v", err)
-
-		// Check if using colima and provide helpful guidance
-		if strings.Contains(dockerHost, "colima") {
-			t.Log("Detected colima - checking resource allocation...")
-			if colimaCmd := exec.Command("colima", "list"); colimaCmd.Run() == nil {
-				if output, err := colimaCmd.Output(); err == nil {
-					t.Logf("Colima configuration:\n%s", string(output))
-				}
+			// Set DOCKER_HOST environment variable if we found a socket
+			if dockerHost != "" {
+				cmd.Env = append(os.Environ(), "DOCKER_HOST="+dockerHost)
 			}
-			t.Fatal("Build failed with colima. This may be due to insufficient memory. " +
-				"Try increasing colima memory: colima stop && colima start --memory 4")
-		}
 
-		t.Fatalf("melange build failed: %v", err)
+			if err := cmd.Run(); err != nil {
+				t.Logf("melange build failed for %s: %v", arch, err)
+
+				// Check if using colima and provide helpful guidance
+				if strings.Contains(dockerHost, "colima") {
+					t.Log("Detected colima - checking resource allocation...")
+					if colimaCmd := exec.Command("colima", "list"); colimaCmd.Run() == nil {
+						if output, err := colimaCmd.Output(); err == nil {
+							t.Logf("Colima configuration:\n%s", string(output))
+						}
+					}
+					t.Fatal("Build failed with colima. This may be due to insufficient memory. " +
+						"Try increasing colima memory: colima stop && colima start --memory 4")
+				}
+
+				t.Fatalf("melange build failed for %s: %v", arch, err)
+			}
+			t.Logf("APK package built successfully for %s", arch)
+		})
 	}
-	t.Log("APK package built successfully")
 }
 
-// TestPackageArtifacts verifies that the expected package files were created
+// TestPackageArtifacts verifies that the expected package files were created for both architectures
 func TestPackageArtifacts(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping package artifacts test in short mode")
 	}
 
-	arch := getNativeArch()
+	// Test both architectures
+	architectures := []string{"x86_64", "aarch64"}
 
-	// This test depends on TestMelangeBuild having run
-	packageFile := filepath.Join("packages", arch, fmt.Sprintf("%s-%s-r0.apk", packageName, packageVersion))
+	for _, arch := range architectures {
+		arch := arch // Capture range variable
+		t.Run(arch, func(t *testing.T) {
+			// This test depends on TestMelangeBuild having run
+			packageFile := filepath.Join("packages", arch, fmt.Sprintf("%s-%s-r0.apk", packageName, packageVersion))
 
-	t.Run("package_file_exists", func(t *testing.T) {
-		if _, err := os.Stat(packageFile); os.IsNotExist(err) {
-			t.Skipf("Package file not found: %s. Run TestMelangeBuild first.", packageFile)
-		}
+			t.Run("package_file_exists", func(t *testing.T) {
+				if _, err := os.Stat(packageFile); os.IsNotExist(err) {
+					t.Skipf("Package file not found: %s. Run TestMelangeBuild first.", packageFile)
+				}
 
-		info, err := os.Stat(packageFile)
-		if err != nil {
-			t.Fatalf("Failed to stat package file: %v", err)
-		}
-		t.Logf("Package size: %d bytes (%.2f KB)", info.Size(), float64(info.Size())/1024)
-	})
+				info, err := os.Stat(packageFile)
+				if err != nil {
+					t.Fatalf("Failed to stat package file: %v", err)
+				}
+				t.Logf("Package size: %d bytes (%.2f KB)", info.Size(), float64(info.Size())/1024)
+			})
 
-	t.Run("apk_index_exists", func(t *testing.T) {
-		indexFile := filepath.Join("packages", arch, "APKINDEX.tar.gz")
-		if _, err := os.Stat(indexFile); os.IsNotExist(err) {
-			t.Skipf("APKINDEX.tar.gz not found: %s", indexFile)
-		}
-	})
+			t.Run("apk_index_exists", func(t *testing.T) {
+				indexFile := filepath.Join("packages", arch, "APKINDEX.tar.gz")
+				if _, err := os.Stat(indexFile); os.IsNotExist(err) {
+					t.Skipf("APKINDEX.tar.gz not found: %s", indexFile)
+				}
+			})
 
-	t.Run("doc_subpackage_exists", func(t *testing.T) {
-		docPackage := filepath.Join("packages", arch, fmt.Sprintf("%s-doc-%s-r0.apk", packageName, packageVersion))
-		if _, err := os.Stat(docPackage); os.IsNotExist(err) {
-			t.Log("Documentation subpackage not found (optional)")
-			return
-		}
+			t.Run("doc_subpackage_exists", func(t *testing.T) {
+				docPackage := filepath.Join("packages", arch, fmt.Sprintf("%s-doc-%s-r0.apk", packageName, packageVersion))
+				if _, err := os.Stat(docPackage); os.IsNotExist(err) {
+					t.Log("Documentation subpackage not found (optional)")
+					return
+				}
 
-		info, err := os.Stat(docPackage)
-		if err != nil {
-			t.Fatalf("Failed to stat doc package: %v", err)
-		}
-		t.Logf("Documentation package size: %d bytes (%.2f KB)", info.Size(), float64(info.Size())/1024)
-	})
+				info, err := os.Stat(docPackage)
+				if err != nil {
+					t.Fatalf("Failed to stat doc package: %v", err)
+				}
+				t.Logf("Documentation package size: %d bytes (%.2f KB)", info.Size(), float64(info.Size())/1024)
+			})
+		})
+	}
 }
 
 // TestPackageContents verifies the contents of the built package
+// Note: This test only verifies the native architecture package since it requires
+// running the container on the same architecture. Cross-architecture testing would
+// require QEMU or multi-arch support.
 func TestPackageContents(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping package contents test in short mode")
@@ -356,6 +369,7 @@ func TestPackageContents(t *testing.T) {
 	}
 
 	arch := getNativeArch()
+	t.Logf("Testing package contents for native architecture: %s", arch)
 
 	packageFile := filepath.Join("packages", arch, fmt.Sprintf("%s-%s-r0.apk", packageName, packageVersion))
 	if _, err := os.Stat(packageFile); os.IsNotExist(err) {
@@ -401,6 +415,9 @@ func TestPackageContents(t *testing.T) {
 }
 
 // TestPackageInstallation tests installing the package in a Wolfi container
+// Note: This test only verifies the native architecture package since it requires
+// running the container on the same architecture. Cross-architecture testing would
+// require QEMU or multi-arch support.
 func TestPackageInstallation(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping package installation test in short mode")
@@ -412,6 +429,7 @@ func TestPackageInstallation(t *testing.T) {
 	}
 
 	arch := getNativeArch()
+	t.Logf("Testing package installation for native architecture: %s", arch)
 
 	packageFile := filepath.Join("packages", arch, fmt.Sprintf("%s-%s-r0.apk", packageName, packageVersion))
 	if _, err := os.Stat(packageFile); os.IsNotExist(err) {

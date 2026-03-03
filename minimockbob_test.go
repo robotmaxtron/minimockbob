@@ -666,13 +666,3 @@ func TestCLISpecialCharacters(t *testing.T) {
 		})
 	}
 }
-
-// TestCLICleanup tests cleaning up the binary after tests
-func TestCLICleanup(t *testing.T) {
-	// Remove the binary if it exists
-	err := os.Remove("./minimockbob")
-	if err != nil && !os.IsNotExist(err) {
-		t.Fatalf("Failed to remove binary: %v", err)
-	}
-	t.Log("Binary cleaned up successfully")
-}

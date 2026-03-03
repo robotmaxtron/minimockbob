@@ -16,3 +16,10 @@ builds:
       - -trimpath
     ldflags:
       - -s -w
+
+# OCI image labels (use --image-label flags when building)
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md
+# Add these labels using ko build command:
+#   --image-label org.opencontainers.image.source=https://github.com/robotmaxtron/minimockbob
+#   --image-label org.opencontainers.image.description="A sarcastic text generator that transforms strings into alternating capitalization"
+#   --image-label org.opencontainers.image.licenses=Apache-2.0
