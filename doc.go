@@ -56,8 +56,16 @@ Usage modes:
 
 The application can be built and run as a container using ko (https://ko.build):
 
-	# Build the container image
+	# Build the container image locally
 	KO_DOCKER_REPO=ko.local ko build ./cmd/minimockbob
+
+	# Or push to a remote registry
+	KO_DOCKER_REPO=docker.io/yourusername ko build ./cmd/minimockbob
+
+	# Build with specific tags
+	KO_DOCKER_REPO=docker.io/yourusername ko build --tags latest ./cmd/minimockbob
+
+Running the container:
 
 	# Run with arguments
 	docker run --rm ko.local/minimockbob:latest "Hello Container"
@@ -65,10 +73,10 @@ The application can be built and run as a container using ko (https://ko.build):
 	# Run with piped input
 	echo "Hello Container" | docker run --rm -i ko.local/minimockbob:latest
 
-Alternatively, build with Docker:
+	# Run from a remote registry
+	docker run --rm docker.io/yourusername/minimockbob:latest "Hello Container"
 
-	docker build -t minimockbob .
-	docker run --rm minimockbob "Hello Docker"
+The ko build uses the .ko.yaml configuration for optimized builds with distroless base images.
 
 # Implementation Details
 

@@ -11,3 +11,10 @@ cmd/minimockbob/minimockbob
 
 # OS
 .DS_Store
+
+# Packages
+packages
+
+# Melange keys
+melange.rsa
+melange.rsa.pub

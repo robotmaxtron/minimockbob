@@ -2,7 +2,8 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/robotmaxtron/minimockbob.svg)](https://pkg.go.dev/github.com/robotmaxtron/minimockbob) [![Go Report Card](https://goreportcard.com/badge/github.com/robotmaxtron/minimockbob)](https://goreportcard.com/report/github.com/robotmaxtron/minimockbob)
 
-`minimockbob` transforms a string into one with alternating capitalization. It can be imported as a Go package, compiled to a binary, or run as a container.
+`minimockbob` transforms a string into one with alternating capitalization. It can be imported as a Go package, 
+compiled to a binary, or run as a container.
 
 ## Installation
 
@@ -28,11 +29,37 @@ KO_DOCKER_REPO=ko.local ko build ./cmd/minimockbob
 
 # Or push to a remote registry
 KO_DOCKER_REPO=docker.io/yourusername ko build ./cmd/minimockbob
+
+# Build with specific tags
+KO_DOCKER_REPO=docker.io/yourusername ko build --tags latest,v0.0.1 ./cmd/minimockbob
 ```
 
-Or build with Docker:
+### Build as a Wolfi APK package
+
+Build with [melange](https://github.com/chainguard-dev/melange):
 ```bash
-docker build -t minimockbob .
+# Generate a signing key (first time only)
+melange keygen
+
+# Build the package
+melange build melange.yaml \
+  --signing-key melange.rsa \
+  --runner docker \
+  --arch aarch64
+
+```
+
+Install the package in a Wolfi container, ARM example below:
+```bash
+# Run Wolfi container with your packages directory mounted
+docker run -v $(pwd)/packages:/packages --rm -it cgr.dev/chainguard/wolfi-base sh
+
+# Inside the container, install the package
+apk add --allow-untrusted /packages/aarch64/minimockbob-0.0.1-r0.apk
+
+# Test the binary
+minimockbob "Hello Wolfi"
+hElLo WoLfI
 ```
 
 ## Usage
@@ -61,13 +88,16 @@ The binary supports three usage modes:
 
 ### Container Usage
 
-Run with Docker:
+Run the container built with ko:
 ```bash
 # With arguments
 docker run --rm ko.local/minimockbob:latest "Hello Container"
 
 # With piped input
 echo "Hello Container" | docker run --rm -i ko.local/minimockbob:latest
+
+# Run from a remote registry
+docker run --rm docker.io/yourusername/minimockbob:latest "Hello Container"
 ```
 
 ### As a Go Package
@@ -122,6 +152,45 @@ Run performance benchmarks:
 go test -bench=. -benchmem
 ```
 
+### Wolfi Package Testing
+
+Test the Wolfi APK package build and functionality:
+```bash
+# Run all melange tests (requires melange and Docker)
+go test -v -run TestMelange
+
+# Run individual test suites
+go test -v -run TestMelangePrerequisites  # Check prerequisites
+go test -v -run TestMelangeYAMLValid      # Validate melange.yaml
+go test -v -run TestMelangeBuild          # Build APK package
+go test -v -run TestPackageArtifacts      # Verify build artifacts
+go test -v -run TestPackageContents       # Check package contents
+go test -v -run TestPackageInstallation   # Test installation
+go test -v -run TestBinaryExecution       # Test binary execution
+
+# Skip melange tests (they take time and require Docker)
+go test -short ./...
+```
+
+The test suite validates:
+- Prerequisites (melange and Docker availability)
+- melange.yaml configuration syntax
+- APK package build process
+- Package artifacts (main package, index, subpackages)
+- Package contents (binary, documentation, license)
+- Package installation in Wolfi container
+- Binary execution with arguments and piped input
+
+**Note:** If using Docker alternatives like colima, rancher-desktop, or podman, the melange build tests may fail due to 
+Docker mount path issues. In this case, run melange directly:
+```bash
+# Generate signing key if needed
+melange keygen
+
+# Build package
+melange build melange.yaml --signing-key melange.rsa --runner docker --arch aarch64
+```
+
 ## Documentation
 
 View the full package documentation:
@@ -136,19 +205,22 @@ godoc -http=:6060
 
 Online documentation is available at [pkg.go.dev](https://pkg.go.dev/github.com/robotmaxtron/minimockbob).
 
-## Container Configuration
+## Container and Package Configuration
 
-The project includes configuration for building optimized container images:
+The project includes configuration for building optimized container images and packages:
 
-- **`.ko.yaml`**: Configuration for [ko](https://ko.build) builds
+- **`.ko.yaml`**: Configuration for [ko](https://ko.build) container builds
   - Uses distroless base image for minimal attack surface
   - CGO disabled for static binary
   - Trimpath for reproducible builds
+  - Optimized ldflags for smaller binary size
+  - Results in minimal container image (~10MB)
 
-- **`Dockerfile`**: Multi-stage Docker build
-  - Alpine-based build stage
-  - Distroless runtime for security
-  - Results in ~9MB container image
+- **`melange.yaml`**: Configuration for [melange](https://github.com/chainguard-dev/melange) APK builds
+  - Builds optimized APK packages for Wolfi OS
+  - Supports x86_64 and aarch64 architectures
+  - Includes stripped binaries with size optimization
+  - Creates main package and documentation subpackage
 
 ### Dedication
 For my friend, James.

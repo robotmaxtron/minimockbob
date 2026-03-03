@@ -1,0 +1,56 @@
+package:
+  name: minimockbob
+  version: 0.0.1
+  epoch: 1
+  description: "A sarcastic text generator - transforms text with alternating capitalization"
+  copyright:
+    - license: Apache-2.0
+  target-architecture:
+    - x86_64
+    - aarch64
+
+update:
+  enabled: true
+environment:
+  contents:
+    repositories:
+      - https://packages.wolfi.dev/os
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    packages:
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - go
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/robotmaxtron/minimockbob.git
+      expected-commit: 3f0ca3405fba4206be658020fe5b57804dd8d576
+      tag: v${{package.version}}
+
+  - uses: go/build
+    with:
+      modroot: .
+      packages: ./cmd/minimockbob
+      output: ./cmd/minimockbob
+      ldflags: |
+        -buildid= \
+        -s -w
+
+  - uses: strip
+
+  - runs: |
+      install -Dm755 minimockbob ${{targets.destdir}}/usr/bin/minimockbob
+      install -Dm644 README.md ${{targets.destdir}}/usr/share/doc/minimockbob/README.md
+      install -Dm644 LICENCE ${{targets.destdir}}/usr/share/licenses/minimockbob/LICENCE
+
+subpackages:
+  - name: minimockbob-doc
+    description: "Documentation for minimockbob"
+    pipeline:
+      - runs: |
+          mkdir -p ${{targets.subpkgdir}}/usr/share/doc/minimockbob
+          cp README.md ${{targets.subpkgdir}}/usr/share/doc/minimockbob/
+
